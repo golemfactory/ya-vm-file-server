@@ -1,0 +1,17 @@
+version: "3.9"  # optional since v1.27.0
+services:
+  server:
+    container_name: test-vm-server
+    image: ya-vm-file-server
+    command: ./ya-vm-file-server --mount-point server_root_fs
+    environment:
+      RUST_LOG: debug
+    ports: 
+      - "7878:7878"
+  client:
+    container_name: test-vm-client
+    image: ya-vm-file-server
+    command: tail -F anything
+    cap_add:
+      - SYS_ADMIN
+        

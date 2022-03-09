@@ -13,6 +13,6 @@ FROM debian:stable-slim
 WORKDIR /work
 COPY --from=builder /ya-vm-file-server/target/release .
 RUN mkdir ./server_root_fs
-ENTRYPOINT ["./ya-vm-file-server", "--mount-point", "server_root_fs"]
+RUN mkdir ./client_fs
 
 
