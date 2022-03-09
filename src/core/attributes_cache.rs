@@ -4,6 +4,8 @@ use log;
 use std::collections::HashMap;
 use std::fs;
 use std::fs::Metadata;
+#[cfg(target_os = "linux")]
+use std::time::Duration;
 
 #[cfg(target_os = "linux")]
 use std::os::unix::prelude::MetadataExt;
@@ -26,6 +28,7 @@ pub enum VAFileType {
 pub struct VirtualAttributes {
     pub inode: u64,
     pub file_size: u64,
+    // TODO: filetype is unused
     pub file_type: VAFileType,
     pub mode: u32,
     pub creation_time: u64,
@@ -121,49 +124,14 @@ impl VirtualAttributes {
         self.file_type = file_type;
         self.file_size = metadata.file_size();
         self.creation_time = metadata.creation_time();
+        // The returned 64-bit value is equivalent to a FILETIME struct, which represents the number of
+        //  100-nanosecond intervals since January 1, 1601 (UTC).
         self.access_time = metadata.last_access_time();
         self.write_time = metadata.last_write_time();
     }
 }
 
-#[cfg(target_os = "linux")]
-impl VirtualAttributes {
-    pub(crate) fn new(_next_inode: u64, metadata: &Metadata) -> VirtualAttributes {
-        // TODO: this probably can be better for linux?
-        let (file_type, _default_mode) = if metadata.is_dir() {
-            (VAFileType::VaDirectory, 16895)
-        } else {
-            (VAFileType::VaFile, 33279)
-        };
-
-        VirtualAttributes {
-            inode: metadata.ino(),
-            file_type: file_type,
-            file_size: metadata.size(),
-            // TODO: mode: default_mode?
-            mode: metadata.mode(),
-            creation_time: metadata.ctime() as u64,
-            access_time: metadata.atime() as u64,
-            write_time: metadata.mtime() as u64,
-        }
-    }
-
-    fn update(&mut self, metadata: Metadata) {
-        self.file_type = if metadata.is_dir() {
-            VAFileType::VaDirectory
-        } else {
-            VAFileType::VaFile
-        };
-
-        // TODO: confirm those values
-        self.inode = metadata.ino();
-        self.file_size = metadata.size();
-        self.creation_time = metadata.ctime() as u64;
-        self.access_time = metadata.atime() as u64;
-        self.write_time = metadata.mtime() as u64;
-    }
-}
-
+#[cfg(target_os = "windows")]
 impl From<VirtualAttributes> for Stat {
     fn from(va: VirtualAttributes) -> Self {
         let stat = Stat {
@@ -183,13 +151,90 @@ impl From<VirtualAttributes> for Stat {
                 sec: va.write_time / 10000000,
                 nsec: (va.write_time % 10000000) * 100,
             },
-            // TODO: Returns the last status change time of the file, in seconds since Unix Epoch.
-            // last status change is the same as creation?
             ctime: Time {
                 sec: va.creation_time / 10000000,
                 nsec: (va.creation_time % 10000000) * 100,
             },
         };
+        stat
+    }
+}
+
+#[cfg(target_os = "linux")]
+impl VirtualAttributes {
+    pub(crate) fn new(_next_inode: u64, metadata: &Metadata) -> VirtualAttributes {
+        // TODO: this probably can be better for linux?
+        let file_type = if metadata.is_dir() {
+            VAFileType::VaDirectory
+        } else {
+            VAFileType::VaFile
+        };
+
+        VirtualAttributes {
+            inode: metadata.ino(),
+            file_type: file_type,
+            file_size: metadata.size(),
+
+            mode: metadata.mode(),
+
+            creation_time: Duration::new(metadata.ctime() as u64, metadata.ctime_nsec() as u32)
+                .as_nanos() as u64,
+            access_time: Duration::new(metadata.atime() as u64, metadata.atime_nsec() as u32)
+                .as_nanos() as u64,
+            write_time: Duration::new(metadata.mtime() as u64, metadata.mtime_nsec() as u32)
+                .as_nanos() as u64,
+        }
+    }
+
+    fn update(&mut self, metadata: Metadata) {
+        self.file_type = if metadata.is_dir() {
+            VAFileType::VaDirectory
+        } else {
+            VAFileType::VaFile
+        };
+
+        // TODO: confirm those values
+        self.inode = metadata.ino();
+        self.file_size = metadata.size();
+        self.creation_time =
+            Duration::new(metadata.ctime() as u64, metadata.ctime_nsec() as u32).as_nanos() as u64;
+        self.access_time =
+            Duration::new(metadata.atime() as u64, metadata.atime_nsec() as u32).as_nanos() as u64;
+        self.write_time =
+            Duration::new(metadata.mtime() as u64, metadata.mtime_nsec() as u32).as_nanos() as u64;
+    }
+}
+
+#[cfg(target_os = "linux")]
+impl From<VirtualAttributes> for Stat {
+    fn from(va: VirtualAttributes) -> Self {
+        let access = Duration::from_nanos(va.access_time);
+        let write = Duration::from_nanos(va.write_time);
+        let change = Duration::from_nanos(va.creation_time);
+
+        let stat = Stat {
+            mode: va.mode,
+            uid: 1000,
+            gid: 1000,
+            nlink: 1,
+            rdev: 0,
+            size: va.file_size,
+            blksize: 4096,
+            blocks: va.file_size / 4096,
+            atime: Time {
+                sec: access.as_secs(),
+                nsec: access.subsec_nanos() as u64,
+            },
+            mtime: Time {
+                sec: write.as_secs(),
+                nsec: write.subsec_nanos() as u64,
+            },
+            ctime: Time {
+                sec: change.as_secs(),
+                nsec: change.subsec_nanos() as u64,
+            },
+        };
+
         stat
     }
 }

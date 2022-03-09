@@ -145,6 +145,7 @@ impl Filesystem for Unpfs {
             realpath.clone()
         };
 
+        // TODO: add test
         if valid.contains(SetattrMask::MODE) {
             self.update_permission_mode_va(&filepath, stat.mode).await?;
             // fs::set_permissions(&filepath, PermissionsExt::from_mode(stat.mode)).await?;
@@ -453,10 +454,13 @@ impl Filesystem for Unpfs {
             realpath.join(name)
         };
 
-        match fs::symlink_metadata(&path).await? {
-            ref attr if attr.is_dir() => fs::remove_dir(&path).await?,
-            _ => fs::remove_file(&path).await?,
-        };
+        let attr = fs::symlink_metadata(&path).await?;
+
+        if attr.is_dir() {
+            fs::remove_dir(&path).await?;
+        } else {
+            fs::remove_file(&path).await?;
+        }
 
         Ok(Fcall::Runlinkat)
     }

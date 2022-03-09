@@ -834,7 +834,8 @@ fn desc(errno: &Errno) -> &'static str {
         #[cfg(target_os = "dragonfly")]
         EASYNC => "Async",
 
-        _ => "No description for error",
+        #[cfg(target_os = "windows")]
+        _ => "No description for error"
     }
 }
 
@@ -920,7 +921,7 @@ impl From<errno::Errno> for Error {
     }
 }
 /*
-implementation From<Error> for Error {
+impl From<Error> for Error {
     fn from(e: nix::Error) -> Self {
         Error::No(e.as_errno().unwrap_or(UnknownErrno))
     }
