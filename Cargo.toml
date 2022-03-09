@@ -32,3 +32,7 @@ build-binary = ["env_logger", "log4rs", "structopt"]
 name = "ya-vm-file-server"
 path = "src/main.rs"
 required-features = ["build-binary"]
+
+# packages used in integration tests
+[dev-dependencies]
+filesystem-rs = { path = "tests/filesystem-rs" }

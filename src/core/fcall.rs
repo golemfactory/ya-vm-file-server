@@ -335,7 +335,7 @@ pub struct Statfs {
     pub namelen: u32,
 }
 /*
-implementation From<nix::sys::statvfs::Statvfs> for Statfs {
+impl From<nix::sys::statvfs::Statvfs> for Statfs {
     fn from(buf: nix::sys::statvfs::Statvfs) -> Statfs {
         Statfs {
             typ: 0,
@@ -358,6 +358,7 @@ implementation From<nix::sys::statvfs::Statvfs> for Statfs {
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Time {
     pub sec: u64,
+    // TODO: there is no need for nsec to be u64
     pub nsec: u64,
 }
 
@@ -394,7 +395,7 @@ pub struct Stat {
 }
 
 /*
-implementation From<fs::Metadata> for Stat {
+impl From<fs::Metadata> for Stat {
     fn from(attr: fs::Metadata) -> Self {
         From::from(&attr)
     }
@@ -402,7 +403,7 @@ implementation From<fs::Metadata> for Stat {
 
 // Default conversion from metadata of libstd
 /*
-implementation<'a> From<&'a fs::Metadata> for Stat {
+impl<'a> From<&'a fs::Metadata> for Stat {
     fn from(attr: &'a fs::Metadata) -> Self {
         Stat {
             mode: 0x1FF,
