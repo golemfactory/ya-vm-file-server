@@ -13,6 +13,7 @@ COPY src ./src
 COPY tests ./tests
 RUN cargo build --release --bin ya-vm-file-server --features="build-binary"
 RUN cargo +nightly test --release --no-run
+RUN mkdir mnt_tests
 
 WORKDIR /work
 COPY docker_client_start.sh .

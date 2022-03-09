@@ -5,7 +5,7 @@ services:
     image: ya-vm-file-server
     command: sh docker_server_start.sh
     environment:
-      RUST_LOG: debug
+      RUST_LOG: error
   client:
     container_name: test-vm-client
     image: ya-vm-file-server
