@@ -3,15 +3,13 @@ services:
   server:
     container_name: test-vm-server
     image: ya-vm-file-server
-    command: ./ya-vm-file-server --mount-point server_root_fs
+    command: sh docker_server_start.sh
     environment:
       RUST_LOG: debug
-    ports: 
-      - "7878:7878"
   client:
     container_name: test-vm-client
     image: ya-vm-file-server
-    command: tail -F anything
+    command: sh docker_client_start.sh
     cap_add:
       - SYS_ADMIN
         
