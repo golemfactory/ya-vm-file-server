@@ -1,0 +1,11 @@
+version: "3.9"  # optional since v1.27.0
+services:
+  client:
+    container_name: test-vm-client
+    image: ya-vm-file-server
+    command: bash -c "cd /ya-vm-file-server && cargo +nightly test"
+    cap_add:
+      - SYS_ADMIN
+    # Allows calling mount under linux
+    privileged: true
+        
