@@ -38,11 +38,11 @@ Build docker:
 docker build . -t ya-vm-file-server
 ```
 
+Running docker tests
 
-
-running docker:
-docker run --cap-add SYS_ADMIN -itd ubuntu
-
+```
+docker-compose up
+```
 
 ### Integration tests
 Tests are half-automatic. First you need to prepare an environment:
