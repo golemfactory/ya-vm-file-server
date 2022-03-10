@@ -12,4 +12,6 @@ services:
     command: sh docker_client_start.sh
     cap_add:
       - SYS_ADMIN
+    # Allows calling mount under linux
+    privileged: true
         
