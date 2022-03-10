@@ -17,7 +17,7 @@ macro_rules! make_test {
         #[test]
         fn $test() {
             let fs = $fs();
-            let path = Path::new("./tests/mnt_tests");
+            let path = Path::new("./mnt_tests");
             if (!path.exists()) {
                 let _unused = fs.create_dir(path);
             }

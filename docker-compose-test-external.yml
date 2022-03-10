@@ -1,0 +1,10 @@
+version: "3.9"  # optional since v1.27.0
+services:
+  client:
+    container_name: test-vm-client
+    image: ya-vm-file-server
+    command: sh docker_client_external_start.sh
+    ports:
+      - "12398:12398"
+    cap_add:
+      - SYS_ADMIN
