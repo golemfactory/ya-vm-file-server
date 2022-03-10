@@ -9,6 +9,6 @@ if mountpoint -q -- "mnt_tests"; then
   printf '%s\n' "client_fs is a mount point"
   ls -la ./mnt_tests
   printf '%s\n' "running tests"
-  cargo test
+  cargo +nightly test
   sleep 1000s
 fi
