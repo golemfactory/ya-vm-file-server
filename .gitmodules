@@ -1,0 +1,3 @@
+[submodule "socat-windows"]
+	path = socat-windows
+	url = https://github.com/StudioEtrange/socat-windows.git
