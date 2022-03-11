@@ -13,5 +13,6 @@ if mountpoint -q -- $MOUNT_POINT; then
   ls -la $MOUNT_POINT
   printf '%s\n' "running tests"
   cargo +nightly test
-  sleep 1000s
 fi
+
+sleep 1000s
