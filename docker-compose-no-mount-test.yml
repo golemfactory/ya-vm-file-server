@@ -3,9 +3,18 @@ services:
   client:
     container_name: test-vm-client
     image: ya-vm-file-server
-    command: bash -c "cd /ya-vm-file-server && cargo +nightly test"
-    cap_add:
-      - SYS_ADMIN
+    command: bash -c "whoami && sleep 1000"
+    user: "dock"
+
+    # volumes:
+    #   - type: bind
+    #     source: /etc/passwd
+    #     target: /etc/passwd
+    #   - type: bind
+    #     source: /etc/group
+    #     target: /etc/group
+    # cap_add:
+      # - SYS_ADMIN
     # Allows calling mount under linux
-    privileged: true
+    # privileged: true
         

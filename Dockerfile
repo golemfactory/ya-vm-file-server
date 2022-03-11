@@ -1,10 +1,20 @@
 FROM debian:stable
 
 RUN apt-get update
-RUN apt-get install -y curl build-essential socat
+RUN apt-get install -y curl build-essential socat sudo
+ENV DOCK_USER=dock
+# ENV DOCK_USER_PSWD=dock
+RUN adduser --disabled-password --gecos '' $DOCK_USER
+# RUN useradd --create-home --shell /bin/bash ${DOCK_USER}
+# RUN echo "${DOCK_USER}:${DOCK_USER_PSWD}" | chpasswd
+RUN adduser ${DOCK_USER} sudo
+
+USER ${DOCK_USER}
+RUN mkdir -p /home/dock/ya-vm-file-server
+WORKDIR /home/dock/ya-vm-file-server
+
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
-ENV PATH="/root/.cargo/bin:${PATH}"
-WORKDIR /ya-vm-file-server
+ENV PATH="/home/dock/.cargo/bin:${PATH}"
 RUN rustup default nightly
 RUN rustup default stable
 COPY Cargo.toml .
@@ -15,7 +25,9 @@ RUN cargo build --release --bin ya-vm-file-server --features="build-binary"
 RUN cargo +nightly test --release --no-run
 RUN mkdir mnt_tests
 
-WORKDIR /work
+RUN mkdir -p /home/dock/work
+WORKDIR /home/dock/work
+
 COPY docker_client_start.sh .
 COPY docker_client_external_start.sh .
 COPY docker_server_start.sh .
