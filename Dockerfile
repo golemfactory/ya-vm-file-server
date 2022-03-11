@@ -22,4 +22,4 @@ COPY docker_server_start.sh .
 RUN mkdir ./server_root_fs
 RUN mkdir ./client_fs
 
-
+VOLUME /golem/input /golem/output
