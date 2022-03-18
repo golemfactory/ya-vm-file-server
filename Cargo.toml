@@ -6,8 +6,8 @@ edition = "2021"
 
 [dependencies]
 env_logger = {version = "^0.9", optional = true }
-log4rs = {version = "^1.0", optional = true }
-structopt = {version = "^0.3", optional = true }
+log4rs = {version = "^1.0"}
+structopt = {version = "^0.3", optional = true}
 filetime = "^0.2"
 tokio = { version = "^1.10", features = ["full"] }
 tokio-stream = { version = "^0.1", features = ["fs"] }
@@ -26,7 +26,7 @@ bytes = "^1.1"
 name = "ya_vm_file_server"
 
 [features]
-build-binary = ["env_logger", "log4rs", "structopt"]
+build-binary = ["env_logger", "structopt"]
 
 [[bin]]
 name = "ya-vm-file-server"
@@ -36,3 +36,4 @@ required-features = ["build-binary"]
 # packages used in integration tests
 [dev-dependencies]
 filesystem-rs = { path = "tests/filesystem-rs" }
+tempdir = "0.3.7"

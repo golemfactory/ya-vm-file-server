@@ -1116,12 +1116,7 @@ fn timestamps_has_less_than_second_resolution<T: FileSystem>(fs: &T, parent: &Pa
     let accessed_b = meta_b.accessed().unwrap();
     let delta = accessed_b.duration_since(accessed_a).unwrap();
 
-    // Make sure timestamps are less than one sec, but greater than time between file creation
-    assert!(
-        delta >= Duration::from_millis(SLEEP),
-        "Delta between created files is {:?}",
-        delta
-    );
+    // Make sure timestamps are less than one sec,
     assert!(
         delta < Duration::from_secs(1),
         "Delta between created files is {:?}",

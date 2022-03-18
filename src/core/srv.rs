@@ -3,6 +3,8 @@
 //! # Protocol
 //! 9P2000.L
 
+use tokio::io::DuplexStream;
+
 use {
     super::{error, error::errno::*, fcall::*, lib_utils::Result, serialize},
     async_trait::async_trait,
@@ -342,7 +344,7 @@ where
         let bytes = bytes?;
 
         let msg = serialize::read_msg(&mut bytes.reader())?;
-        log::info!("\t← {:?}", msg);
+        log::debug!("\t← {:?}", msg);
 
         let fids = fsfids.clone();
         let fs = filesystem.clone();
@@ -372,7 +374,7 @@ where
                         .await
                         .unwrap();
                 }
-                log::info!("\t→ {:?}", response);
+                log::debug!("\t→ {:?}", response);
             }
         });
     }
@@ -411,4 +413,14 @@ where
         "tcp" => srv_async_tcp(filesystem, &listen_address).await,
         _ => Err(From::from(io_err!(InvalidInput, "Protocol not supported"))),
     }
+}
+
+/// Main loop of 9p server that uses inproc stream
+pub async fn srv_async_inproc<Fs>(filesystem: Fs, server: DuplexStream) -> Result<()>
+where
+    Fs: 'static + Filesystem + Send + Sync + Clone,
+{
+    let (server_rx, server_tx) = tokio::io::split(server);
+
+    dispatch(filesystem, server_rx, server_tx).await
 }
