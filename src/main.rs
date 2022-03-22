@@ -3,21 +3,20 @@ pub mod core;
 mod implementation;
 mod input_args;
 
+use crate::core::attributes_cache::*;
 use crate::core::lib_utils::Result;
 use crate::core::srv::srv_async;
-use input_args::ServerOptions;
-use std::sync::Arc;
-use tokio::{fs, sync::Mutex};
-//use crate::utils::*;
-use crate::core::attributes_cache::*;
 use crate::implementation::unpfs::Unpfs;
 use log::LevelFilter;
 use log4rs::append::file::FileAppender;
 use log4rs::config::{Appender, Config, Root};
 use log4rs::encode::pattern::PatternEncoder;
+use input_args::ServerOptions;
 use std::env;
+use std::sync::Arc;
 use structopt;
 use structopt::StructOpt;
+use tokio::{fs, sync::Mutex};
 
 async fn unpfs_main(server_options: ServerOptions) -> Result<i32> {
     let mount_point_metadata = fs::metadata(&server_options.mount_point).await;
@@ -62,7 +61,7 @@ async fn unpfs_main(server_options: ServerOptions) -> Result<i32> {
     .and(Ok(0))
 }
 
-fn build_rs_log(log_path: &str) -> anyhow::Result<()> {
+pub fn build_rs_log(log_path: &str) -> anyhow::Result<()> {
     let logfile = FileAppender::builder()
         .encoder(Box::new(PatternEncoder::new("{d} {l} {t} - {m}{n}")))
         .build(log_path)?;

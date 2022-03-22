@@ -1077,6 +1077,7 @@ dependencies = [
  "log4rs",
  "num-traits 0.2.14",
  "structopt",
+ "tempdir",
  "tokio",
  "tokio-stream",
  "tokio-util",
