@@ -134,6 +134,9 @@ impl VirtualAttributes {
 #[cfg(target_os = "windows")]
 impl From<VirtualAttributes> for Stat {
     fn from(va: VirtualAttributes) -> Self {
+        // Number of seconds that passed between win32 epoch (01-01-1601) and unix epoch (01-01-1970)
+        const UNIX_WIN32_EPOCH_DIFF: u64 = 11644473600;
+
         let stat = Stat {
             mode: va.mode,
             uid: 1000,
@@ -144,15 +147,15 @@ impl From<VirtualAttributes> for Stat {
             blksize: 4096,
             blocks: va.file_size / 4096,
             atime: Time {
-                sec: va.access_time / 10000000,
+                sec: (va.access_time / 10000000) - UNIX_WIN32_EPOCH_DIFF,
                 nsec: (va.access_time % 10000000) * 100,
             },
             mtime: Time {
-                sec: va.write_time / 10000000,
+                sec: (va.write_time / 10000000) - UNIX_WIN32_EPOCH_DIFF,
                 nsec: (va.write_time % 10000000) * 100,
             },
             ctime: Time {
-                sec: va.creation_time / 10000000,
+                sec: (va.creation_time / 10000000) - UNIX_WIN32_EPOCH_DIFF,
                 nsec: (va.creation_time % 10000000) * 100,
             },
         };
