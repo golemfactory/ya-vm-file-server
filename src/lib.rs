@@ -40,8 +40,8 @@ impl InprocServer {
     /// Returns client stream to write requests, and read responses
     /// To detach simply drop the stream
     pub fn attach_client(&self) -> DuplexStream {
-        // TODO: constant
-        let (client, server) = tokio::io::duplex(16384);
+        const MAX_MESSAGE_SIZE: usize = 1024*1024;
+        let (client, server) = tokio::io::duplex(MAX_MESSAGE_SIZE);
 
         tokio::spawn(srv_async_inproc(self.filesystem.clone(), server));
 

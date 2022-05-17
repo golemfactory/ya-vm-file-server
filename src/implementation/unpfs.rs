@@ -62,6 +62,9 @@ impl Unpfs {
 impl Filesystem for Unpfs {
     type Fid = UnpfsFid;
 
+    fn get_mount_point(&self) -> &PathBuf {
+        &self.realroot
+    }
     async fn rattach(
         &self,
         fid: &Fid<Self::Fid>,
@@ -387,7 +390,8 @@ impl Filesystem for Unpfs {
             file.seek(SeekFrom::Start(offset)).await?;
 
             let mut buf = create_buffer(count as usize);
-            let bytes = file.read(&mut buf[..]).await?;
+            let bytes = file.read_exact(&mut buf[..]).await?;
+
             buf.truncate(bytes);
             buf
         };
@@ -400,7 +404,9 @@ impl Filesystem for Unpfs {
             let mut file = fid.aux.file.lock().await;
             let file = file.as_mut().ok_or(io_err!(InvalidInput, "Invalid fid"))?;
             file.seek(SeekFrom::Start(offset)).await?;
-            file.write(&data.0).await? as u32
+
+            file.write_all(&data.0).await?;
+            data.0.len() as u32
         };
 
         Ok(Fcall::Rwrite { count })

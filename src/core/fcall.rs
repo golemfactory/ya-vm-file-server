@@ -3,7 +3,10 @@
 //! # Protocol
 //! 9P2000.L
 
-use std::mem::{size_of, size_of_val};
+use std::{
+    fmt::Display,
+    mem::{size_of, size_of_val},
+};
 
 use bitflags::bitflags;
 use enum_primitive::*;
@@ -994,4 +997,21 @@ pub struct Msg {
     pub tag: u16,
     /// Message body encapsulating the various 9P messages
     pub body: Fcall,
+}
+
+impl Display for Msg {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self.body {
+            Fcall::Rread { data } => {
+                write!(f, "Rread tag: {}, read len {}", self.tag, data.0.len())
+            }
+            Fcall::Twrite { fid, offset, data } => write!(
+                f,
+                "Twrite tag: {} fid: {fid}, offset: {offset}, data_len {}",
+                self.tag,
+                data.0.len()
+            ),
+            fcall @ _ => write!(f, "{fcall:?}"),
+        }
+    }
 }

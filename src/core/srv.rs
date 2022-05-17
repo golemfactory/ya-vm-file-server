@@ -3,6 +3,8 @@
 //! # Protocol
 //! 9P2000.L
 
+use std::path::PathBuf;
+
 use tokio::io::DuplexStream;
 
 use {
@@ -56,6 +58,8 @@ impl<T> Fid<T> {
 pub trait Filesystem: Send {
     /// User defined fid type to be associated with a client's fid.
     type Fid: Send + Sync + Default;
+
+    fn get_mount_point(&self) -> &PathBuf;
 
     // 9P2000.L
     async fn rstatfs(&self, _: &Fid<Self::Fid>) -> Result<Fcall> {
@@ -240,6 +244,8 @@ pub trait Filesystem: Send {
     }
 
     async fn rversion(&self, msize: u32, ver: &str) -> Result<Fcall> {
+        log::info!("{}: Got Tversion: msize {msize}, version {ver}", self.get_mount_point().display());
+
         Ok(Fcall::Rversion {
             msize,
             version: match ver {
@@ -340,23 +346,28 @@ where
         .new_write(writer);
     let framedwrite = Arc::new(Mutex::new(framedwrite));
 
+    let mount_point = filesystem.get_mount_point();
+
     while let Some(bytes) = framedread.next().await {
         let bytes = bytes?;
 
         let msg = serialize::read_msg(&mut bytes.reader())?;
-        log::debug!("\t← {:?}", msg);
+
+        log::debug!("\t← {} {}", msg, mount_point.display());
 
         let fids = fsfids.clone();
         let fs = filesystem.clone();
         let framedwrite = framedwrite.clone();
 
         tokio::spawn(async move {
-            let response_fcall = dispatch_once(&msg, fs, fids).await.unwrap_or_else(|e| {
-                log::error!("{:?}: Error: \"{}\": {:?}", MsgType::from(&msg.body), e, e);
-                Fcall::Rlerror {
-                    ecode: e.errno() as u32,
-                }
-            });
+            let response_fcall = dispatch_once(&msg, fs.clone(), fids)
+                .await
+                .unwrap_or_else(|e| {
+                    log::error!("{:?}: Error: \"{}\": {:?}", MsgType::from(&msg.body), e, e);
+                    Fcall::Rlerror {
+                        ecode: e.errno() as u32,
+                    }
+                });
 
             if MsgType::from(&response_fcall).is_r() {
                 let response = Msg {
@@ -369,12 +380,13 @@ where
 
                 {
                     let mut framedwrite_locked = framedwrite.lock().await;
+
                     framedwrite_locked
                         .send(writer.into_inner().freeze())
                         .await
                         .unwrap();
                 }
-                log::debug!("\t→ {:?}", response);
+                log::debug!("\t→ {} {}", response, fs.get_mount_point().display());
             }
         });
     }

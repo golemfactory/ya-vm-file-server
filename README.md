@@ -55,7 +55,6 @@ Tests are half-automatic. First you need to prepare an environment:
 3) On other shell mount to the server:
 
    ```
-   cd tests
    sudo mount -t 9p -o version=9p2000.L,trans=tcp,debug=0x04,port=7878,uname=testuser 127.0.0.1 ./mnt_tests
    ```
 
