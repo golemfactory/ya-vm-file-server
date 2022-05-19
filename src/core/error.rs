@@ -835,7 +835,7 @@ fn desc(errno: &Errno) -> &'static str {
         EASYNC => "Async",
 
         #[cfg(target_os = "windows")]
-        _ => "No description for error"
+        _ => "No description for error",
     }
 }
 

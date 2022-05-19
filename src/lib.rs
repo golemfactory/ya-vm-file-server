@@ -39,9 +39,8 @@ impl InprocServer {
     /// Attaches to the 9p server,
     /// Returns client stream to write requests, and read responses
     /// To detach simply drop the stream
-    pub fn attach_client(&self) -> DuplexStream {
-        // TODO: constant
-        let (client, server) = tokio::io::duplex(16384);
+    pub fn attach_client(&self, max_packet_size: usize) -> DuplexStream {
+        let (client, server) = tokio::io::duplex(max_packet_size);
 
         tokio::spawn(srv_async_inproc(self.filesystem.clone(), server));
 
@@ -102,7 +101,7 @@ mod tests {
         }
 
         fn new(server: &InprocServer) -> Self {
-            let client = server.attach_client();
+            let client = server.attach_client(16384);
 
             let (reader, writer) = tokio::io::split(client);
 
