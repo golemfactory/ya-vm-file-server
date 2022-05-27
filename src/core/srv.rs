@@ -344,6 +344,8 @@ where
         let bytes = bytes?;
 
         let msg = serialize::read_msg(&mut bytes.reader())?;
+
+        #[cfg(feature = "debug-msg")]
         log::debug!("\t← {:?}", msg);
 
         let fids = fsfids.clone();
@@ -374,6 +376,7 @@ where
                         .await
                         .unwrap();
                 }
+                #[cfg(feature = "debug-msg")]
                 log::debug!("\t→ {:?}", response);
             }
         });

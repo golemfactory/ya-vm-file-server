@@ -1,6 +1,6 @@
 [package]
 name = "ya-vm-file-server"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Golem Factory <contact@golem.network>"]
 edition = "2021"
 
@@ -27,11 +27,12 @@ name = "ya_vm_file_server"
 
 [features]
 build-binary = ["env_logger", "structopt"]
+debug-msg = []
 
 [[bin]]
 name = "ya-vm-file-server"
 path = "src/main.rs"
-required-features = ["build-binary"]
+required-features = ["build-binary", "debug-msg"]
 
 # packages used in integration tests
 [dev-dependencies]
