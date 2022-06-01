@@ -27,7 +27,7 @@ cargo build
 To compile binary:
 
 ```bash
-cargo build --bin ya-vm-file-server --features="build-binary"
+cargo build --bin ya-vm-file-server --features="build-binary debug-msg"
 ```
 
 ## Testing

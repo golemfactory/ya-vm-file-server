@@ -79,7 +79,7 @@ pub fn build_rs_log(log_path: &str) -> anyhow::Result<()> {
 }
 
 //sudo mount -t 9p -o version=9p2000.L,trans=tcp,debug=0x04,port=7878,uname=testuser 192.168.174.1 ./mnt
-#[tokio::main]
+#[tokio::main(flavor = "current_thread")]
 async fn main() {
     let server_options: ServerOptions = ServerOptions::from_args();
 
