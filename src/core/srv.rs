@@ -354,7 +354,8 @@ where
 
         tokio::spawn(async move {
             let response_fcall = dispatch_once(&msg, fs, fids).await.unwrap_or_else(|e| {
-                log::error!("{:?}: Error: \"{}\": {:?}", MsgType::from(&msg.body), e, e);
+                #[cfg(feature = "debug-msg")]
+                log::info!("{:?}: Error: \"{}\": {:?}", MsgType::from(&msg.body), e, e);
                 Fcall::Rlerror {
                     ecode: e.errno() as u32,
                 }

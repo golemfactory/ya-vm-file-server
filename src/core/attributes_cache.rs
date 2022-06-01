@@ -51,6 +51,7 @@ impl VirtualAttributesProvider {
         match self.attributes_map.get_mut(&file_path) {
             Some(el) => {
                 let metadata = fs::metadata(&file_path).map_err(|error| {
+                    #[cfg(feature = "debug-msg")]
                     log::error!("File not found despite existing attributes: {}", file_path);
                     error
                 })?;
@@ -61,6 +62,7 @@ impl VirtualAttributesProvider {
             }
             None => {
                 let metadata = fs::metadata(&file_path).map_err(|error| {
+                    #[cfg(feature = "debug-msg")]
                     log::debug!("File not found: {}", file_path);
                     error
                 })?;
