@@ -4,10 +4,10 @@ use log;
 use std::collections::HashMap;
 use std::fs;
 use std::fs::Metadata;
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 use std::time::Duration;
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 use std::os::unix::prelude::MetadataExt;
 
 #[cfg(target_os = "windows")]
@@ -165,7 +165,7 @@ impl From<VirtualAttributes> for Stat {
     }
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 impl VirtualAttributes {
     pub(crate) fn new(_next_inode: u64, metadata: &Metadata) -> VirtualAttributes {
         // TODO: this probably can be better for linux?
@@ -210,7 +210,7 @@ impl VirtualAttributes {
     }
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 impl From<VirtualAttributes> for Stat {
     fn from(va: VirtualAttributes) -> Self {
         let access = Duration::from_nanos(va.access_time);
