@@ -6,6 +6,18 @@ use {
     tokio::fs,
 };
 
+fn file_type_to_byte(file_type: &std::fs::FileType) -> u8 {
+    if file_type.is_file() {
+        0x08
+    } else if file_type.is_dir() {
+        0x04
+    } else if file_type.is_symlink() {
+        0x12
+    } else {
+        0x00
+    }
+}
+
 pub fn create_buffer(size: usize) -> Vec<u8> {
     let mut buffer = Vec::with_capacity(size);
     unsafe {
@@ -50,7 +62,7 @@ pub async fn get_dirent(
     Ok(DirEntry {
         qid: qid_from_attr(&entry.metadata().await?, va),
         offset: offset,
-        typ: 0,
+        typ: file_type_to_byte(&entry.file_type().await?),
         name: entry.file_name().to_string_lossy().into_owned(),
     })
 }
